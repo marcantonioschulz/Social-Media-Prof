@@ -15,7 +15,7 @@ export const typeOrmConfigFactory = (
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
   synchronize: configService.get('NODE_ENV') === 'development',
   logging: configService.get('NODE_ENV') === 'development',
-  ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: false, // Disabled for internal Docker network
 });
 
 // For TypeORM CLI
