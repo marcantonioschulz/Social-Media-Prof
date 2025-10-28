@@ -82,10 +82,6 @@ const ApprovalsPage = () => {
               const post = workflow.post;
               if (!post) return null;
 
-              const pendingSteps = workflow.steps?.filter(
-                (step) => step.status === 'pending' && canApprove(step)
-              );
-
               return (
                 <div
                   key={workflow.id}

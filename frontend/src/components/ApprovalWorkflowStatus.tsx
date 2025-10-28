@@ -86,7 +86,7 @@ const ApprovalWorkflowStatus = ({ workflow }: ApprovalWorkflowStatusProps) => {
               )}
             </div>
 
-            {index < workflow.steps.length - 1 && (
+            {workflow.steps && index < workflow.steps.length - 1 && (
               <div className="absolute left-3 mt-8 h-full w-px bg-gray-200" />
             )}
           </div>
