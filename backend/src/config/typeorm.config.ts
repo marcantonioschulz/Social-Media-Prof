@@ -14,10 +14,11 @@ export const typeOrmConfigFactory = (
   database: configService.get('POSTGRES_DB'),
   entities: [join(__dirname, '..', 'modules', '**', '*.entity.{ts,js}')],
   migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
-  synchronize: false, // Never use in production - use migrations instead
-  migrationsRun: true, // Auto-run migrations on startup
+  synchronize: configService.get('NODE_ENV') === 'development', // Auto-create tables in development
+  migrationsRun: false, // Disabled for now - migrations don't work with Webpack
   logging: configService.get('NODE_ENV') === 'development',
   ssl: false, // Disabled for internal Docker network
+  autoLoadEntities: true, // Automatically load entities with Webpack - official NestJS recommendation
 });
 
 // For TypeORM CLI
