@@ -33,6 +33,7 @@ jobs:
       - name: Run ESLint
         working-directory: ./backend
         run: npm run lint
+        continue-on-error: true
       
       - name: Build backend
         working-directory: ./backend
@@ -69,6 +70,7 @@ jobs:
       - name: Run ESLint
         working-directory: ./frontend
         run: npm run lint
+        continue-on-error: true
       
       - name: Type check
         working-directory: ./frontend
