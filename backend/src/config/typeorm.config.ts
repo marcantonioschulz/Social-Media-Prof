@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { join } from 'path';
 
 export const typeOrmConfigFactory = (
   configService: ConfigService,
@@ -11,9 +12,10 @@ export const typeOrmConfigFactory = (
   username: configService.get('POSTGRES_USER'),
   password: configService.get('POSTGRES_PASSWORD'),
   database: configService.get('POSTGRES_DB'),
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-  synchronize: configService.get('NODE_ENV') === 'development',
+  entities: [join(__dirname, '..', 'modules', '**', '*.entity.{ts,js}')],
+  migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
+  synchronize: false, // Never use in production - use migrations instead
+  migrationsRun: true, // Auto-run migrations on startup
   logging: configService.get('NODE_ENV') === 'development',
   ssl: false, // Disabled for internal Docker network
 });
@@ -26,8 +28,8 @@ export const dataSourceOptions: DataSourceOptions = {
   username: process.env.POSTGRES_USER || 'socialmedia',
   password: process.env.POSTGRES_PASSWORD || 'changeme_secure_password',
   database: process.env.POSTGRES_DB || 'socialmedia',
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
+  entities: [join(__dirname, '..', 'modules', '**', '*.entity.{ts,js}')],
+  migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
 };
 
 export default new DataSource(dataSourceOptions);
