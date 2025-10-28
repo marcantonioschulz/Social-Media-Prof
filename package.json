@@ -1,0 +1,25 @@
+{
+  "name": "social-media-prof-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Social Media Compliance Platform - Monorepo",
+  "scripts": {
+    "prepare": "husky",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint"
+  },
+  "devDependencies": {
+    "husky": "^9.0.11"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}

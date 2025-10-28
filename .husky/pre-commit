@@ -1,0 +1,32 @@
+#\!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo "${YELLOW}🔍 Running pre-commit checks...${NC}"
+
+# Test Backend Build
+echo "${YELLOW}📦 Building backend...${NC}"
+cd backend
+if \! npm run build; then
+  echo "${RED}❌ Backend build failed\! Fix TypeScript errors before committing.${NC}"
+  exit 1
+fi
+echo "${GREEN}✅ Backend build successful${NC}"
+cd ..
+
+# Test Frontend Build
+echo "${YELLOW}📦 Building frontend...${NC}"
+cd frontend
+if \! npm run build; then
+  echo "${RED}❌ Frontend build failed\! Fix TypeScript errors before committing.${NC}"
+  exit 1
+fi
+echo "${GREEN}✅ Frontend build successful${NC}"
+cd ..
+
+echo "${GREEN}✨ All checks passed\! Proceeding with commit...${NC}"

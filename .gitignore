@@ -16,7 +16,7 @@ build/
 *.tsbuildinfo
 
 # IDE
-.vscode/
+# .vscode/ - shared team settings, not ignored
 .idea/
 *.swp
 *.swo
