@@ -6,7 +6,7 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Request as RequestDecorator,
   UseInterceptors,
   UploadedFile,
   Query,
@@ -25,6 +25,7 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { AssetsService } from './assets.service';
 import { UploadAssetDto } from './dto/upload-asset.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -52,14 +53,14 @@ export class AssetsController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body() uploadAssetDto: UploadAssetDto,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ): Promise<Asset> {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
 
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.assetsService.upload(
@@ -80,8 +81,8 @@ export class AssetsController {
     description: 'List of assets',
     type: [Asset],
   })
-  async findAll(@Request() req, @Query('postId') postId?: string): Promise<Asset[]> {
-    const { organizationId } = req.user;
+  async findAll(@RequestDecorator() req: Request, @Query('postId') postId?: string): Promise<Asset[]> {
+    const { organizationId } = (req as any).user;
     return this.assetsService.findAll(organizationId, postId);
   }
 
@@ -93,8 +94,8 @@ export class AssetsController {
     type: Asset,
   })
   @ApiResponse({ status: 404, description: 'Asset not found' })
-  async findOne(@Param('id') id: string, @Request() req): Promise<Asset> {
-    const { organizationId } = req.user;
+  async findOne(@Param('id') id: string, @RequestDecorator() req: Request): Promise<Asset> {
+    const { organizationId } = (req as any).user;
     return this.assetsService.findOne(id, organizationId);
   }
 
@@ -109,10 +110,10 @@ export class AssetsController {
   async attachToPost(
     @Param('id') assetId: string,
     @Param('postId') postId: string,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ): Promise<Asset> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.assetsService.attachToPost(
@@ -130,9 +131,9 @@ export class AssetsController {
   @ApiOperation({ summary: 'Delete an asset' })
   @ApiResponse({ status: 204, description: 'Asset deleted successfully' })
   @ApiResponse({ status: 404, description: 'Asset not found' })
-  async remove(@Param('id') id: string, @Request() req): Promise<void> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+  async remove(@Param('id') id: string, @RequestDecorator() req: Request): Promise<void> {
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.assetsService.remove(id, organizationId, userId, ipAddress, userAgent);
@@ -146,8 +147,8 @@ export class AssetsController {
     type: Asset,
   })
   @ApiResponse({ status: 404, description: 'Asset not found' })
-  async refreshUrl(@Param('id') id: string, @Request() req): Promise<Asset> {
-    const { organizationId } = req.user;
+  async refreshUrl(@Param('id') id: string, @RequestDecorator() req: Request): Promise<Asset> {
+    const { organizationId } = (req as any).user;
     return this.assetsService.refreshUrl(id, organizationId);
   }
 }

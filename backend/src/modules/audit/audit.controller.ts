@@ -4,9 +4,10 @@ import {
   Query,
   Param,
   UseGuards,
-  Request,
+  Request as RequestDecorator,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Request } from 'express';
 import { AuditService } from './audit.service';
 import { QueryAuditLogsDto } from './dto/query-audit-logs.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -35,15 +36,15 @@ export class AuditController {
   @ApiQuery({ name: 'endDate', required: false })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  async findAll(@Query() queryDto: QueryAuditLogsDto, @Request() req) {
+  async findAll(@Query() queryDto: QueryAuditLogsDto, @RequestDecorator() req: Request) {
     // Super admins can see all audit logs, others only their organization
-    const organizationId = req.user.role === UserRole.SUPER_ADMIN
+    const organizationId = (req as any).user.role === UserRole.SUPER_ADMIN
       ? queryDto.organizationId
-      : req.user.organizationId;
+      : (req as any).user.organizationId;
 
     // Override organizationId in query for non-super admins
-    if (req.user.role !== UserRole.SUPER_ADMIN) {
-      queryDto.organizationId = req.user.organizationId;
+    if ((req as any).user.role !== UserRole.SUPER_ADMIN) {
+      queryDto.organizationId = (req as any).user.organizationId;
     }
 
     return this.auditService.findAll(queryDto, organizationId);
@@ -56,9 +57,9 @@ export class AuditController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  async getRecentActivity(@Query('limit') limit: string, @Request() req) {
+  async getRecentActivity(@Query('limit') limit: string, @RequestDecorator() req: Request) {
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    return this.auditService.getRecentActivity(req.user.organizationId, limitNum);
+    return this.auditService.getRecentActivity((req as any).user.organizationId, limitNum);
   }
 
   @Get('summary')
@@ -72,11 +73,11 @@ export class AuditController {
   async getActivitySummary(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.auditService.getActivitySummary(req.user.organizationId, start, end);
+    return this.auditService.getActivitySummary((req as any).user.organizationId, start, end);
   }
 
   @Get('entity/:entityType/:entityId')
@@ -88,12 +89,12 @@ export class AuditController {
   async findByEntity(
     @Param('entityType') entityType: string,
     @Param('entityId') entityId: string,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ) {
     // Super admins can see all, others only their organization
-    const organizationId = req.user.role === UserRole.SUPER_ADMIN
+    const organizationId = (req as any).user.role === UserRole.SUPER_ADMIN
       ? undefined
-      : req.user.organizationId;
+      : (req as any).user.organizationId;
 
     return this.auditService.findByEntity(entityType, entityId, organizationId);
   }
@@ -105,11 +106,11 @@ export class AuditController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Audit log not found' })
-  async findOne(@Param('id') id: string, @Request() req) {
+  async findOne(@Param('id') id: string, @RequestDecorator() req: Request) {
     // Super admins can see all, others only their organization
-    const organizationId = req.user.role === UserRole.SUPER_ADMIN
+    const organizationId = (req as any).user.role === UserRole.SUPER_ADMIN
       ? undefined
-      : req.user.organizationId;
+      : (req as any).user.organizationId;
 
     return this.auditService.findOne(id, organizationId);
   }

@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Request as RequestDecorator,
   HttpCode,
   HttpStatus,
+  ConflictException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -43,14 +45,14 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'Get all organizations' })
   @ApiResponse({ status: 200, description: 'Returns all organizations' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(@Request() req) {
+  async findAll(@RequestDecorator() req: Request) {
     // Super admins can see all organizations
-    if (req.user.role === UserRole.SUPER_ADMIN) {
+    if ((req as any).user.role === UserRole.SUPER_ADMIN) {
       return this.organizationsService.findAll(true);
     }
 
     // Regular users can only see their own organization
-    return [await this.organizationsService.findOne(req.user.organizationId)];
+    return [await this.organizationsService.findOne((req as any).user.organizationId)];
   }
 
   @Get(':id')
@@ -59,9 +61,9 @@ export class OrganizationsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async findOne(@Param('id') id: string, @Request() req) {
+  async findOne(@Param('id') id: string, @RequestDecorator() req: Request) {
     // Ensure multi-tenant isolation (unless super admin)
-    if (req.user.role !== UserRole.SUPER_ADMIN && id !== req.user.organizationId) {
+    if ((req as any).user.role !== UserRole.SUPER_ADMIN && id !== (req as any).user.organizationId) {
       throw new ConflictException('Access denied');
     }
 
@@ -74,9 +76,9 @@ export class OrganizationsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async getStatistics(@Param('id') id: string, @Request() req) {
+  async getStatistics(@Param('id') id: string, @RequestDecorator() req: Request) {
     // Ensure multi-tenant isolation (unless super admin)
-    if (req.user.role !== UserRole.SUPER_ADMIN && id !== req.user.organizationId) {
+    if ((req as any).user.role !== UserRole.SUPER_ADMIN && id !== (req as any).user.organizationId) {
       throw new ConflictException('Access denied');
     }
 
@@ -95,10 +97,10 @@ export class OrganizationsController {
   async update(
     @Param('id') id: string,
     @Body() updateOrganizationDto: UpdateOrganizationDto,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ) {
     // Ensure multi-tenant isolation (unless super admin)
-    if (req.user.role !== UserRole.SUPER_ADMIN && id !== req.user.organizationId) {
+    if ((req as any).user.role !== UserRole.SUPER_ADMIN && id !== (req as any).user.organizationId) {
       throw new ConflictException('Access denied');
     }
 
@@ -115,10 +117,10 @@ export class OrganizationsController {
   async updateSettings(
     @Param('id') id: string,
     @Body() settings: Record<string, any>,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ) {
     // Ensure multi-tenant isolation (unless super admin)
-    if (req.user.role !== UserRole.SUPER_ADMIN && id !== req.user.organizationId) {
+    if ((req as any).user.role !== UserRole.SUPER_ADMIN && id !== (req as any).user.organizationId) {
       throw new ConflictException('Access denied');
     }
 

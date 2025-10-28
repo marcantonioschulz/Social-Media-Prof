@@ -27,7 +27,7 @@ export class ApprovalStep extends BaseEntity {
 
   @ApiProperty({ description: 'Approval/rejection comment', required: false })
   @Column({ type: 'text', nullable: true })
-  comment: string;
+  comment: string | null;
 
   @ApiProperty({ description: 'Step completed at', required: false })
   @Column({ type: 'timestamp', nullable: true })

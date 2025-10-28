@@ -7,11 +7,12 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Request as RequestDecorator,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -35,10 +36,10 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 409, description: 'User already exists' })
-  async create(@Body() createUserDto: CreateUserDto, @Request() req) {
+  async create(@Body() createUserDto: CreateUserDto, @RequestDecorator() req: Request) {
     // Ensure user can only create users in their organization (unless super admin)
-    if (req.user.role !== UserRole.SUPER_ADMIN) {
-      createUserDto.organizationId = req.user.organizationId;
+    if ((req as any).user.role !== UserRole.SUPER_ADMIN) {
+      createUserDto.organizationId = (req as any).user.organizationId;
     }
 
     return this.usersService.create(createUserDto);
@@ -48,11 +49,11 @@ export class UsersController {
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Returns all users' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(@Request() req) {
+  async findAll(@RequestDecorator() req: Request) {
     // Super admins can see all users, others only see their organization
-    const organizationId = req.user.role === UserRole.SUPER_ADMIN
+    const organizationId = (req as any).user.role === UserRole.SUPER_ADMIN
       ? undefined
-      : req.user.organizationId;
+      : (req as any).user.organizationId;
 
     return this.usersService.findAll(organizationId);
   }
@@ -62,11 +63,11 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Returns the user' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async findOne(@Param('id') id: string, @Request() req) {
+  async findOne(@Param('id') id: string, @RequestDecorator() req: Request) {
     // Super admins can see any user, others only see users in their organization
-    const organizationId = req.user.role === UserRole.SUPER_ADMIN
+    const organizationId = (req as any).user.role === UserRole.SUPER_ADMIN
       ? undefined
-      : req.user.organizationId;
+      : (req as any).user.organizationId;
 
     return this.usersService.findOne(id, organizationId);
   }
@@ -83,12 +84,12 @@ export class UsersController {
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ) {
     // Super admins can update any user, others only users in their organization
-    const organizationId = req.user.role === UserRole.SUPER_ADMIN
+    const organizationId = (req as any).user.role === UserRole.SUPER_ADMIN
       ? undefined
-      : req.user.organizationId;
+      : (req as any).user.organizationId;
 
     return this.usersService.update(id, updateUserDto, organizationId);
   }
@@ -101,11 +102,11 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async remove(@Param('id') id: string, @Request() req) {
+  async remove(@Param('id') id: string, @RequestDecorator() req: Request) {
     // Super admins can delete any user, others only users in their organization
-    const organizationId = req.user.role === UserRole.SUPER_ADMIN
+    const organizationId = (req as any).user.role === UserRole.SUPER_ADMIN
       ? undefined
-      : req.user.organizationId;
+      : (req as any).user.organizationId;
 
     await this.usersService.remove(id, organizationId);
   }

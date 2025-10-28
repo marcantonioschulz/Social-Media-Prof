@@ -5,7 +5,7 @@ import {
   Body,
   Param,
   UseGuards,
-  Request,
+  Request as RequestDecorator,
   Query,
 } from '@nestjs/common';
 import {
@@ -15,6 +15,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { ApprovalsService } from './approvals.service';
 import { CreateApprovalDto } from './dto/create-approval.dto';
 import { ApproveRejectDto } from './dto/approve-reject.dto';
@@ -41,10 +42,10 @@ export class ApprovalsController {
   @ApiResponse({ status: 404, description: 'Post not found' })
   async createWorkflow(
     @Body() createApprovalDto: CreateApprovalDto,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ): Promise<ApprovalWorkflow> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.approvalsService.createWorkflow(
@@ -69,10 +70,10 @@ export class ApprovalsController {
   async approve(
     @Param('id') id: string,
     @Body() approveDto: ApproveRejectDto,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ): Promise<ApprovalWorkflow> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.approvalsService.approve(
@@ -98,10 +99,10 @@ export class ApprovalsController {
   async reject(
     @Param('id') id: string,
     @Body() rejectDto: ApproveRejectDto,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ): Promise<ApprovalWorkflow> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.approvalsService.reject(
@@ -122,8 +123,8 @@ export class ApprovalsController {
     type: ApprovalWorkflow,
   })
   @ApiResponse({ status: 404, description: 'Workflow not found' })
-  async getWorkflowStatus(@Param('id') id: string, @Request() req): Promise<ApprovalWorkflow> {
-    const { organizationId } = req.user;
+  async getWorkflowStatus(@Param('id') id: string, @RequestDecorator() req: Request): Promise<ApprovalWorkflow> {
+    const { organizationId } = (req as any).user;
     return this.approvalsService.getWorkflowStatus(id, organizationId);
   }
 
@@ -136,10 +137,10 @@ export class ApprovalsController {
     type: [ApprovalWorkflow],
   })
   async findAll(
-    @Request() req,
+    @RequestDecorator() req: Request,
     @Query('status') status?: WorkflowStatus,
   ): Promise<ApprovalWorkflow[]> {
-    const { organizationId } = req.user;
+    const { organizationId } = (req as any).user;
     return this.approvalsService.findAll(organizationId, status);
   }
 
@@ -152,10 +153,10 @@ export class ApprovalsController {
     type: [ApprovalWorkflow],
   })
   async findMyApprovals(
-    @Request() req,
+    @RequestDecorator() req: Request,
     @Query('status') status?: StepStatus,
   ): Promise<ApprovalWorkflow[]> {
-    const { organizationId, sub: userId } = req.user;
+    const { organizationId, sub: userId } = (req as any).user;
     return this.approvalsService.findByApprover(organizationId, userId, status);
   }
 }

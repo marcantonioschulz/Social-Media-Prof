@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Request as RequestDecorator,
   Query,
   HttpCode,
   HttpStatus,
@@ -19,6 +19,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -41,9 +42,9 @@ export class PostsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
-  async create(@Body() createPostDto: CreatePostDto, @Request() req): Promise<PostEntity> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+  async create(@Body() createPostDto: CreatePostDto, @RequestDecorator() req: Request): Promise<PostEntity> {
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.postsService.create(
@@ -64,8 +65,8 @@ export class PostsController {
     description: 'List of posts',
     type: [PostEntity],
   })
-  async findAll(@Request() req, @Query('status') status?: PostStatus, @Query('myPosts') myPosts?: string): Promise<PostEntity[]> {
-    const { organizationId, sub: userId } = req.user;
+  async findAll(@RequestDecorator() req: Request, @Query('status') status?: PostStatus, @Query('myPosts') myPosts?: string): Promise<PostEntity[]> {
+    const { organizationId, sub: userId } = (req as any).user;
     const filterUserId = myPosts === 'true' ? userId : undefined;
 
     return this.postsService.findAll(organizationId, filterUserId, status);
@@ -79,8 +80,8 @@ export class PostsController {
     type: PostEntity,
   })
   @ApiResponse({ status: 404, description: 'Post not found' })
-  async findOne(@Param('id') id: string, @Request() req): Promise<PostEntity> {
-    const { organizationId } = req.user;
+  async findOne(@Param('id') id: string, @RequestDecorator() req: Request): Promise<PostEntity> {
+    const { organizationId } = (req as any).user;
     return this.postsService.findOne(id, organizationId);
   }
 
@@ -96,10 +97,10 @@ export class PostsController {
   async update(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
-    @Request() req,
+    @RequestDecorator() req: Request,
   ): Promise<PostEntity> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.postsService.update(id, updatePostDto, organizationId, userId, ipAddress, userAgent);
@@ -111,9 +112,9 @@ export class PostsController {
   @ApiResponse({ status: 204, description: 'Post deleted successfully' })
   @ApiResponse({ status: 404, description: 'Post not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  async remove(@Param('id') id: string, @Request() req): Promise<void> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+  async remove(@Param('id') id: string, @RequestDecorator() req: Request): Promise<void> {
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.postsService.remove(id, organizationId, userId, ipAddress, userAgent);
@@ -128,9 +129,9 @@ export class PostsController {
   })
   @ApiResponse({ status: 404, description: 'Post not found' })
   @ApiResponse({ status: 400, description: 'Post not approved' })
-  async publish(@Param('id') id: string, @Request() req): Promise<PostEntity> {
-    const { organizationId, sub: userId } = req.user;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+  async publish(@Param('id') id: string, @RequestDecorator() req: Request): Promise<PostEntity> {
+    const { organizationId, sub: userId } = (req as any).user;
+    const ipAddress = req.ip || (req as any).connection?.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     return this.postsService.publish(id, organizationId, userId, ipAddress, userAgent);

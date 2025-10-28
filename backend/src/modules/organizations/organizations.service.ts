@@ -138,7 +138,7 @@ export class OrganizationsService {
   /**
    * Check if organization has access to a resource (Multi-Tenant validation)
    */
-  async validateOrganizationAccess(organizationId: string, resourceOrganizationId: string): boolean {
+  async validateOrganizationAccess(organizationId: string, resourceOrganizationId: string): Promise<boolean> {
     if (organizationId !== resourceOrganizationId) {
       throw new ConflictException('Access denied: Resource belongs to another organization');
     }

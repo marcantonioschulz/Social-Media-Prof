@@ -27,7 +27,7 @@ export class AuditService {
   /**
    * Log an audit event
    */
-  async log(createAuditLogDto: CreateAuditLogDto): Promise<AuditLog> {
+  async log(createAuditLogDto: CreateAuditLogDto): Promise<AuditLog | null> {
     try {
       const auditLog = this.auditLogRepository.create(createAuditLogDto);
       return await this.auditLogRepository.save(auditLog);
